@@ -201,7 +201,7 @@
       const checkBackend = async () => {
         const dot = $("dot"), status = $("serverStatus");
         status.textContent = "Conectando servidor";
-        const ctrl = new AbortController(), timeout = setTimeout(() => ctrl.abort(), 20000);
+        const ctrl = new AbortController(), timeout = setTimeout(() => ctrl.abort(), 75000);
         try {
           const r = await fetch(API + "/api/health", { signal: ctrl.signal, cache: "no-store" });
           const data = await r.json();
@@ -209,7 +209,10 @@
           online = true; dot.className = "dot ok"; status.textContent = "Procesador disponible"; clearAlert();
         } catch (e) {
           online = false; dot.className = "dot bad"; status.textContent = "Servidor sin conexión";
-          showAlert("El backend todavía no está disponible. La vista previa funciona; el procesamiento se habilitará cuando el servidor esté activo.", "info");
+          showAlert("El servidor gratuito puede tardar hasta un minuto en activarse. Si el procesador no conecta, pulsa Reintentar conexión.", "info");
+          const retry = document.createElement("button");
+          retry.type = "button"; retry.className = "tiny"; retry.textContent = " ↻ Reintentar conexión";
+          retry.addEventListener("click", checkBackend); $("alert").appendChild(retry);
         } finally { clearTimeout(timeout); refreshButton(); }
       };
       drop.addEventListener("click", () => fileInput.click());
