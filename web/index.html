@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101c2f">
+  <meta name="description" content="Estandarización de portadas PDF a Carta y ubicación uniforme del cuadro de firmas.">
+  <title>Ubicarportads | Normalización de portadas PDF</title>
+  <style>
+    :root { --navy:#101c2f; --navy2:#20334e; --gold:#bb9755; --goldlite:#f6efe0; --ink:#1d2d45; --muted:#697891; --line:#e1e7ef; --paper:#f5f7fa; --green:#15755a; --red:#b73f46; --shadow:0 12px 34px rgba(15,35,60,.065); }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,input{font:inherit}
+    .top{background:var(--navy);color:#fff;min-height:72px;display:flex;align-items:center;justify-content:space-between;padding:12px max(24px,calc((100vw - 1270px)/2));gap:20px}
+    .brand{display:flex;align-items:center;gap:13px}
+    .monogram{width:43px;height:43px;display:grid;place-items:center;border:1px solid rgba(234,199,136,.55);border-radius:12px;color:#edd6a6;font-size:19px;font-weight:800}
+    .brand strong{display:block;font-size:19px;letter-spacing:.2px}
+    .brand small{display:block;color:#c0cad7;font-size:11px;letter-spacing:.6px;text-transform:uppercase}
+    .top-right{display:flex;align-items:center;gap:18px;font-size:12px;color:#d4deea}
+    .pill{display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid #456078;border-radius:25px}
+    .dot{width:8px;height:8px;background:#e0a94d;border-radius:50%;display:inline-block}
+    .dot.ok{background:#50c79b}.dot.bad{background:#f08484}
+    main{max-width:1270px;margin:auto;padding:30px 24px 42px}
+    .intro{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:25px}
+    .eyebrow{color:#9e773b;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}
+    h1{font-size:clamp(25px,3vw,36px);line-height:1.2;letter-spacing:-.8px;margin:6px 0 10px}
+    .intro p{margin:0;color:var(--muted);max-width:750px}
+    .tag{border:1px solid #e8d5b4;background:var(--goldlite);padding:10px 14px;border-radius:10px;white-space:nowrap;font-size:13px;font-weight:800;color:#946f34}
+    .layout{display:grid;grid-template-columns: minmax(330px,460px) minmax(0,1fr);gap:20px;align-items:start}
+    .stack{display:grid;gap:18px}
+    .card{border:1px solid var(--line);box-shadow:var(--shadow);border-radius:15px;background:white;overflow:hidden}
+    .card-h{display:flex;align-items:center;justify-content:space-between;padding:17px 20px;border-bottom:1px solid var(--line);gap:12px}
+    h2{font-size:16px;margin:0;letter-spacing:-.25px}
+    .num{display:inline-grid;place-items:center;margin-right:9px;width:24px;height:24px;background:#ecf0f5;border-radius:8px;color:#52657f;font-size:12px;font-weight:800}
+    .card-body{padding:20px}
+    .drop{padding:28px 16px;border:2px dashed #c6d0dc;background:#f8fafc;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;cursor:pointer;min-height:202px;text-align:center;transition:.15s}
+    .drop:hover,.drop.drag{border-color:var(--gold);background:#fffbf3}
+    .iconfile{width:50px;height:50px;display:grid;place-items:center;border-radius:14px;background:#eaf0f7;font-size:28px}
+    .drop strong{font-size:15px}
+    .drop span{color:var(--muted);font-size:12px}
+    .linklike{color:#8a672f;font-weight:700;text-decoration:underline}
+    .picked{display:none;gap:12px;align-items:center;border:1px solid #d8e8dc;background:#f1f8f3;border-radius:11px;padding:12px 14px;margin-top:13px}
+    .picked.on{display:flex}
+    .picked .meta{min-width:0;flex:1}
+    .picked strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+    .picked small{color:var(--muted);font-size:11px}
+    .tiny{background:transparent;border:0;cursor:pointer;font-weight:700;color:#62728c;font-size:12px;padding:5px}
+    .choice{display:flex;align-items:flex-start;gap:10px;padding:13px;border:1px solid var(--line);border-radius:10px;cursor:pointer;margin-bottom:9px}
+    .choice:has(input:checked){border-color:#bfa26e;background:#fdfaf4}
+    .choice input{margin:4px 0;accent-color:#ad884d}
+    .choice b{font-size:13px;display:block}
+    .choice small{font-size:12px;color:var(--muted);display:block}
+    .manual{display:none;padding:15px;background:#f9fafc;border-radius:9px;margin-top:10px}
+    .manual.on{display:block}
+    .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    label.field{display:grid;gap:4px;color:var(--muted);font-size:12px}
+    .field input{width:100%;padding:9px 10px;background:#fff;border:1px solid #cdd7e2;border-radius:7px;color:var(--ink)}
+    .hint{font-size:12px;color:var(--muted);margin:9px 0 0}
+    button.primary{width:100%;padding:14px;border:0;border-radius:10px;background:var(--navy);color:white;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center}
+    button.primary:hover{background:var(--navy2)}
+    button.primary:disabled{opacity:.52;cursor:not-allowed}
+    .safe{margin-top:11px;font-size:11px;color:var(--muted);text-align:center}
+    .alert{padding:11px 13px;border-radius:9px;font-size:12px;margin-top:14px;display:none}
+    .alert.show{display:block}
+    .alert.error{background:#fff1f1;color:#95333a;border:1px solid #f6ced0}
+    .alert.info{background:#edf4fb;color:#234d75;border:1px solid #caddf1}
+    .alert.success{background:#edfaf3;color:#176c50;border:1px solid #c7ead8}
+    .preview-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 20px;border-bottom:1px solid var(--line)}
+    .tabs{display:inline-flex;padding:3px;background:#edf1f6;border-radius:8px;gap:2px}
+    .tabs button{border:0;background:transparent;color:#627189;padding:6px 10px;border-radius:6px;font-size:12px;cursor:pointer}
+    .tabs button.on{background:white;color:#172d4b;box-shadow:0 1px 4px #ced5df;font-weight:750}
+    .sheet-wrap{background:#e9eef4;padding:17px;min-height:490px}
+    .sheet{border:1px solid #d8e0ea;background:#fff;border-radius:7px;max-width:100%;height:570px;overflow:hidden;box-shadow:0 15px 35px rgba(21,34,54,.09)}
+    .sheet iframe{width:100%;height:100%;border:0}
+    .placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#7a8798;gap:11px;padding:20px}
+    .placeholder span{font-size:47px;opacity:.5}
+    .placeholder strong{color:#5f6f85}
+    .placeholder small{max-width:270px;font-size:12px}
+    .specs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line)}
+    .spec{background:white;text-align:center;padding:13px 8px}
+    .spec b{display:block;font-size:14px}
+    .spec small{color:var(--muted);font-size:11px}
+    .result{display:none;border:1px solid #d0e7d9;background:#f4fbf7;border-radius:12px;padding:15px;margin-top:13px}
+    .result.on{display:block}
+    .result b{display:block;color:#17674f;margin-bottom:5px}
+    .result small{color:#60786b;display:block;margin-bottom:12px}
+    .download{display:flex;align-items:center;justify-content:center;background:#17765b;color:white;text-decoration:none;border-radius:9px;padding:11px;font-size:13px;font-weight:800}
+    .foot{max-width:1270px;margin:auto;padding:0 24px 30px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:20px}
+    .foot a{color:#7a612e}
+    @media(max-width:870px){.layout{grid-template-columns:1fr}.sheet{height:480px}.tag{display:none}.top-right .scope{display:none}}
+    @media(max-width:520px){main{padding:22px 14px}.top{padding:12px 15px}.brand strong{font-size:17px}.top-right{font-size:11px}.sheet-wrap{padding:9px;min-height:410px}.sheet{height:390px}.preview-header{flex-wrap:wrap}.foot{padding:0 14px 25px}.spec small{font-size:10px}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><div class="monogram">U</div><div><strong>Ubicarportads</strong><small>Normalización documental</small></div></div>
+    <div class="top-right"><span class="scope">Institucional · PDF</span><div class="pill"><span class="dot" id="dot"></span><span id="serverStatus" aria-live="polite">Verificando servidor</span></div></div>
+  </header>
+  <main>
+    <section class="intro">
+      <div><div class="eyebrow">Estandarización de portadas</div><h1>Firmas en el lugar correcto. Siempre.</h1><p>Normaliza todas las páginas a tamaño carta y ubica el cuadro de <b>Elaborado, Revisado y Aprobado</b> en una posición uniforme, sin cambiar nombres, cargos ni aplicar firmas.</p></div>
+      <span class="tag">Estándar APA 7 · Carta</span>
+    </section>
+    <div class="layout">
+      <div class="stack">
+        <section class="card">
+          <div class="card-h"><h2><span class="num">01</span>Cargar documento</h2><span class="eyebrow">PDF</span></div>
+          <div class="card-body">
+            <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+            <div class="drop" id="drop" role="button" tabindex="0" aria-label="Seleccionar archivo PDF">
+              <div class="iconfile" aria-hidden="true">⇧</div>
+              <strong>Arrastra tu PDF aquí</strong>
+              <span>o <span class="linklike">selecciona un archivo</span> de tu equipo</span>
+              <span>PDF · máximo 30 MB · hasta 250 páginas</span>
+            </div>
+            <div class="picked" id="picked"><span aria-hidden="true">📄</span><div class="meta"><strong id="fileName"></strong><small id="fileSize"></small></div><button class="tiny" id="remove" type="button">Quitar</button></div>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-h"><h2><span class="num">02</span>Posición del cuadro</h2></div>
+          <div class="card-body">
+            <label class="choice"><input type="radio" name="mode" value="auto" checked><span><b>Detección automática (recomendado)</b><small>Localiza la tabla de tres columnas y la recoloca en la portada.</small></span></label>
+            <label class="choice"><input type="radio" name="mode" value="manual"><span><b>Ajuste manual</b><small>Define el área original en porcentajes si la tabla no se reconoce.</small></span></label>
+            <div class="manual" id="manual">
+              <div class="grid4">
+                <label class="field">Izquierda (%)<input id="x" type="number" min="0" max="100" step="0.1" value="14.6"></label>
+                <label class="field">Superior (%)<input id="y" type="number" min="0" max="100" step="0.1" value="75.1"></label>
+                <label class="field">Ancho (%)<input id="w" type="number" min="0" max="100" step="0.1" value="73.1"></label>
+                <label class="field">Alto (%)<input id="h" type="number" min="0" max="100" step="0.1" value="12.8"></label>
+              </div>
+              <p class="hint">Las cifras iniciales corresponden al documento de ejemplo. En otros archivos debes ajustarlas según la portada. El área debe contener las tres etiquetas.</p>
+            </div>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-h"><h2><span class="num">03</span>Normalizar y descargar</h2></div>
+          <div class="card-body">
+            <button class="primary" id="process" disabled>Preparar PDF tamaño Carta <span aria-hidden="true">→</span></button>
+            <div class="safe">No se generan firmas · Sin almacenamiento permanente · Se rechazan archivos firmados</div>
+            <div class="alert" id="alert" role="status" aria-live="polite"></div>
+            <div class="result" id="result"><b>✓ Documento preparado</b><small id="resultText"></small><a class="download" id="download" href="#" download="documento_CARTA.pdf">↓ Descargar PDF corregido</a></div>
+          </div>
+        </section>
+      </div>
+      <section class="card">
+        <div class="preview-header"><h2>Vista previa del documento</h2><div class="tabs"><button type="button" id="originalTab" class="on">Original</button><button type="button" id="processedTab" disabled>Corregido</button></div></div>
+        <div class="sheet-wrap"><div class="sheet" id="sheet"><div class="placeholder"><span aria-hidden="true">▤</span><strong>Tu documento aparecerá aquí</strong><small>Sube un PDF para revisar su portada. Después del proceso podrás comparar la versión original y la normalizada.</small></div></div></div>
+        <div class="specs"><div class="spec"><b>21,59 × 27,94</b><small>cm · Tamaño Carta</small></div><div class="spec"><b>18 × 4,2</b><small>cm · Área de firmas</small></div><div class="spec"><b>1.ª página</b><small>Ubicación estandarizada</small></div></div>
+      </section>
+    </div>
+  </main>
+  <footer class="foot"><span>Ubicarportads · Herramienta de preparación previa a la firma electrónica</span><a href="https://github.com/jeffer91/Ubicarportads" target="_blank" rel="noopener noreferrer">Repositorio de GitHub ↗</a></footer>
+  <script>
+    (() => {
+      "use strict";
+      const API = "https://ubicarportads-api.onrender.com";
+      const $ = id => document.getElementById(id);
+      const drop = $("drop"), fileInput = $("file"), processButton = $("process");
+      let source = null, sourceUrl = null, outputUrl = null, online = false, busy = false;
+      const formats = n => (n / (1024 * 1024)).toFixed(2) + " MB";
+      const showAlert = (message, type = "error") => {
+        const el = $("alert");
+        el.className = "alert show " + type;
+        el.textContent = message;
+      };
+      const clearAlert = () => { $("alert").className = "alert"; $("alert").textContent = ""; };
+      const refreshButton = () => { processButton.disabled = !source || !online || busy; };
+      const preview = url => {
+        const sheet = $("sheet");
+        sheet.innerHTML = "";
+        if (!url) { sheet.innerHTML = '<div class="placeholder"><span>▤</span><strong>Selecciona un documento</strong></div>'; return; }
+        const frame = document.createElement("iframe");
+        frame.title = "Vista previa de PDF";
+        frame.src = url + "#view=FitH&toolbar=0";
+        sheet.appendChild(frame);
+      };
+      const tabs = which => {
+        $("originalTab").classList.toggle("on", which === "original");
+        $("processedTab").classList.toggle("on", which === "processed");
+        preview(which === "processed" && outputUrl ? outputUrl : sourceUrl);
+      };
+      const clearResult = () => {
+        $("result").classList.remove("on");
+        $("processedTab").disabled = true;
+        if (outputUrl) URL.revokeObjectURL(outputUrl);
+        outputUrl = null;
+      };
+      const selectFile = file => {
+        if (!file) return;
+        if (!file.name.toLowerCase().endsWith(".pdf") || file.type && file.type !== "application/pdf") { showAlert("Selecciona un archivo PDF válido."); return; }
+        if (file.size > 30 * 1024 * 1024) { showAlert("El archivo supera 30 MB."); return; }
+        clearAlert(); clearResult();
+        if (sourceUrl) URL.revokeObjectURL(sourceUrl);
+        source = file;
+        sourceUrl = URL.createObjectURL(file);
+        $("picked").classList.add("on");
+        $("fileName").textContent = file.name;
+        $("fileSize").textContent = formats(file.size);
+        tabs("original"); refreshButton();
+      };
+      const checkBackend = async () => {
+        const dot = $("dot"), status = $("serverStatus");
+        status.textContent = "Conectando servidor";
+        const ctrl = new AbortController(), timeout = setTimeout(() => ctrl.abort(), 20000);
+        try {
+          const r = await fetch(API + "/api/health", { signal: ctrl.signal, cache: "no-store" });
+          const data = await r.json();
+          if (!r.ok || data.ok !== true) throw new Error("Servicio no disponible");
+          online = true; dot.className = "dot ok"; status.textContent = "Procesador disponible"; clearAlert();
+        } catch (e) {
+          online = false; dot.className = "dot bad"; status.textContent = "Servidor sin conexión";
+          showAlert("El backend todavía no está disponible. La vista previa funciona; el procesamiento se habilitará cuando el servidor esté activo.", "info");
+        } finally { clearTimeout(timeout); refreshButton(); }
+      };
+      drop.addEventListener("click", () => fileInput.click());
+      drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); } });
+      fileInput.addEventListener("change", () => selectFile(fileInput.files[0]));
+      ["dragenter","dragover"].forEach(name => drop.addEventListener(name, e => { e.preventDefault(); drop.classList.add("drag"); }));
+      ["dragleave","drop"].forEach(name => drop.addEventListener(name, e => { e.preventDefault(); drop.classList.remove("drag"); }));
+      drop.addEventListener("drop", e => selectFile(e.dataTransfer.files[0]));
+      $("remove").addEventListener("click", () => {
+        source = null; fileInput.value = "";
+        if (sourceUrl) URL.revokeObjectURL(sourceUrl);
+        sourceUrl = null; clearResult(); clearAlert();
+        $("picked").classList.remove("on"); preview(null); refreshButton();
+      });
+      document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener("change", () => {
+        $("manual").classList.toggle("on", document.querySelector('input[name="mode"]:checked').value === "manual");
+        clearResult(); tabs("original");
+      }));
+      $("originalTab").addEventListener("click", () => tabs("original"));
+      $("processedTab").addEventListener("click", () => { if (outputUrl) tabs("processed"); });
+      processButton.addEventListener("click", async () => {
+        if (!source || !online || busy) return;
+        busy = true; refreshButton(); clearResult(); clearAlert();
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        const body = new FormData(); body.append("file", source); body.append("mode", mode);
+        if (mode === "manual") for (const id of ["x", "y", "w", "h"]) {
+          if (!$ (id).value || !Number.isFinite(Number($(id).value))) { showAlert("Completa las cuatro coordenadas manuales."); busy = false; refreshButton(); return; }
+          body.append(id, $(id).value);
+        }
+        processButton.textContent = "Procesando documento…";
+        try {
+          const resp = await fetch(API + "/api/process", { method: "POST", body });
+          if (!resp.ok) {
+            const issue = await resp.json().catch(() => ({}));
+            throw new Error(typeof issue.detail === "string" ? issue.detail : "No se pudo procesar el documento.");
+          }
+          const blob = await resp.blob();
+          if (blob.type !== "application/pdf") throw new Error("La respuesta del servidor no es un PDF.");
+          outputUrl = URL.createObjectURL(blob);
+          const pages = resp.headers.get("X-Page-Count") || "—";
+          const method = resp.headers.get("X-Detection-Mode") === "manual" ? "manual" : "automática";
+          $("resultText").textContent = pages + " páginas convertidas a Carta; tabla reposicionada mediante detección " + method + ".";
+          $("download").href = outputUrl;
+          $("download").download = source.name.replace(/\.pdf$/i, "") + "_CARTA.pdf";
+          $("result").classList.add("on");
+          $("processedTab").disabled = false;
+          tabs("processed");
+          showAlert("PDF generado correctamente. Revisa la vista previa antes de enviarlo a firmar.", "success");
+        } catch (e) { showAlert(e.message || "Error de red. Vuelve a intentarlo."); }
+        finally { busy = false; processButton.textContent = "Preparar PDF tamaño Carta →"; refreshButton(); }
+      });
+      checkBackend();
+      $("serverStatus").addEventListener("click", () => { if (!online) checkBackend(); });
+      window.addEventListener("beforeunload", () => { if (sourceUrl) URL.revokeObjectURL(sourceUrl); if (outputUrl) URL.revokeObjectURL(outputUrl); });
+    })();
+  </script>
+</body>
+</html>
