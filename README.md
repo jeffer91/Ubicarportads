@@ -45,23 +45,45 @@ Los PDFs se procesan en memoria y no se almacenan en el backend. Se rechazan arc
 
 **No subir documentos institucionales con datos personales al repositorio público.** No modificar un documento después de que ya fue firmado digitalmente.
 
-## Desarrollo local con npm
+## Aplicación de escritorio (Electron)
 
-Requisitos: **Node.js 18 o superior y Python 3.9 o superior** instalados.
+La aplicación funciona como **ventana de escritorio Electron** y usa internamente Python/FastAPI para los PDF. El usuario no tiene que abrir manualmente servidores ni usar el navegador.
+
+### Abrir desde Visual Studio Code (Windows)
+
+Requisitos para desarrollar: **Node.js 20 o superior** y **Python 3.9 o superior** instalados.
 
 Desde la raíz del repositorio:
 
-1. Ejecutar `npm install`: crea el entorno virtual `.venv` e instala las dependencias Python.
-2. Ejecutar `npm start`: inicia la web en `http://localhost:5500` y la API en `http://localhost:8000`.
-3. Abrir `http://localhost:5500` en el navegador. `Ctrl+C` detiene ambos servicios.
-4. Para desarrollo con recarga automática del backend, usar `npm run dev`.
+```powershell
+npm install
+npm start
+```
 
-La web detecta automáticamente `localhost` y se conecta a la API local; en GitHub Pages sigue utilizando el backend publicado en Render. El procesamiento de PDFs **sigue siendo Python/FastAPI**, mientras que npm prepara y arranca toda la aplicación.
+- `npm install` prepara `.venv` e instala las dependencias del procesador Python, además de descargar Electron.
+- `npm start` abre una ventana independiente de Electron; inicia el backend en un puerto local libre y sirve la interfaz desde otro puerto local libre.
+- `npm run dev` abre la ventana con herramientas de desarrollo.
+- `npm test` ejecuta pruebas automatizadas del servidor local.
+- Cierra la ventana para detener el servidor local. No requiere conexión a Render para procesar los PDF.
 
-Para las pruebas del backend, después de `npm install`:
+**Si `git pull` indica que un `package-lock.json` local sería sobreescrito**, esta versión deja de publicarlo; después de actualizar se generará uno local durante `npm install`. No elimines tus archivos de trabajo.
 
-- Windows: `.venv\\Scripts\\python.exe -m pip install pytest` y `.venv\\Scripts\\python.exe -m pytest -q backend/tests`.
-- Linux/macOS: `.venv/bin/python -m pip install pytest` y `.venv/bin/python -m pytest -q backend/tests`.
+### Crear instalador de Windows
+
+En Windows, con Node.js y Python instalados, ejecuta:
+
+```powershell
+npm install
+npm run dist:win
+```
+
+El proceso compila primero el backend Python usando PyInstaller y después crea el instalador de Electron con electron-builder. Los artefactos se guardan en `release/`. **El instalador generado incluye el backend**: el usuario final no necesita instalar Python ni Node.js.
+
+El backend compilado permanece en `build/backend-dist/` y no se sube a GitHub. Para distribuir el instalador es recomendable firmarlo digitalmente.
+
+### Modo web
+
+La interfaz `web/index.html` sigue disponible en GitHub Pages y utiliza el backend alojado en Render. En Electron usa únicamente su backend local.
 
 ## Despliegue
 
