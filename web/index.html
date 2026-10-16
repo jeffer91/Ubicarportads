@@ -153,7 +153,9 @@
   <script>
     (() => {
       "use strict";
-      const API = "https://ubicarportads-api.onrender.com";
+      const API = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+        ? "http://localhost:8000"
+        : "https://ubicarportads-api.onrender.com";
       const $ = id => document.getElementById(id);
       const drop = $("drop"), fileInput = $("file"), processButton = $("process");
       let source = null, sourceUrl = null, outputUrl = null, online = false, busy = false;
