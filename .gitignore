@@ -3,3 +3,7 @@ node_modules/
 __pycache__/
 *.py[cod]
 .env
+package-lock.json
+build/
+release/
+*.spec
