@@ -36,8 +36,8 @@ jobs:
         run: npm test
       - name: Pruebas del procesador PDF
         run: |
-          .venv\Scripts\python.exe -m pip install pytest
-          .venv\Scripts\python.exe -m pytest -q backend/tests
+          .\.venv\Scripts\python.exe -m pip install pytest
+          .\.venv\Scripts\python.exe -m pytest -q backend/tests
       - name: Crear instalador Windows
         run: npm run dist:win
       - name: Verificar instalador
