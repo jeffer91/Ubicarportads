@@ -31,7 +31,7 @@ app = FastAPI(
     redoc_url=None,
 )
 desktop_origin = os.environ.get("UBICARPORTADS_DESKTOP_ORIGIN", "")
-desktop_origins = ([desktop_origin] if re.fullmatch(r"http://127\\.0\\.0\\.1:[0-9]{2,5}", desktop_origin) else [])
+desktop_origins = ([desktop_origin] if re.fullmatch(r"http://127\.0\.0\.1:[0-9]{2,5}", desktop_origin) else [])
 
 app.add_middleware(
     CORSMiddleware,
