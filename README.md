@@ -45,15 +45,23 @@ Los PDFs se procesan en memoria y no se almacenan en el backend. Se rechazan arc
 
 **No subir documentos institucionales con datos personales al repositorio público.** No modificar un documento después de que ya fue firmado digitalmente.
 
-## Desarrollo local
+## Desarrollo local con npm
+
+Requisitos: **Node.js 18 o superior y Python 3.9 o superior** instalados.
 
 Desde la raíz del repositorio:
 
-1. `python -m pip install -r backend/requirements.txt`
-2. `python -m uvicorn backend.app:app --reload`
-3. `python -m pip install pytest && python -m pytest -q backend/tests`
+1. Ejecutar `npm install`: crea el entorno virtual `.venv` e instala las dependencias Python.
+2. Ejecutar `npm start`: inicia la web en `http://localhost:5500` y la API en `http://localhost:8000`.
+3. Abrir `http://localhost:5500` en el navegador. `Ctrl+C` detiene ambos servicios.
+4. Para desarrollo con recarga automática del backend, usar `npm run dev`.
 
-Documentación de la API en `http://localhost:8000/api/docs`.
+La web detecta automáticamente `localhost` y se conecta a la API local; en GitHub Pages sigue utilizando el backend publicado en Render. El procesamiento de PDFs **sigue siendo Python/FastAPI**, mientras que npm prepara y arranca toda la aplicación.
+
+Para las pruebas del backend, después de `npm install`:
+
+- Windows: `.venv\\Scripts\\python.exe -m pip install pytest` y `.venv\\Scripts\\python.exe -m pytest -q backend/tests`.
+- Linux/macOS: `.venv/bin/python -m pip install pytest` y `.venv/bin/python -m pytest -q backend/tests`.
 
 ## Despliegue
 
