@@ -1,0 +1,54 @@
+name: Validar y empaquetar Electron para Windows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'electron/**'
+      - 'backend/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - '.github/workflows/electron-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - name: Obtener repositorio
+        uses: actions/checkout@v4
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instalar Electron y backend
+        run: npm install
+      - name: Pruebas del servidor local
+        run: npm test
+      - name: Pruebas del procesador PDF
+        run: |
+          .venv\Scripts\python.exe -m pip install pytest
+          .venv\Scripts\python.exe -m pytest -q backend/tests
+      - name: Crear instalador Windows
+        run: npm run dist:win
+      - name: Verificar instalador
+        shell: pwsh
+        run: |
+          $installers = Get-ChildItem -Path release -Recurse -Filter '*.exe'
+          if ($installers.Count -eq 0) { throw 'No se generó el instalador de Windows' }
+          $installers | Select-Object Name, Length
+      - name: Guardar instalador Electron
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ubicarportads-Electron-Windows
+          path: release/*.exe
+          if-no-files-found: error
