@@ -30,6 +30,9 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url=None,
 )
+desktop_origin = os.environ.get("UBICARPORTADS_DESKTOP_ORIGIN", "")
+desktop_origins = ([desktop_origin] if re.fullmatch(r"http://127\\.0\\.0\\.1:[0-9]{2,5}", desktop_origin) else [])
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -37,7 +40,7 @@ app.add_middleware(
         "http://localhost:8000",
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-    ],
+    ] + desktop_origins,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
     expose_headers=["X-Page-Count", "X-Detection-Mode", "X-Source-Paper"],
