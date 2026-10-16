@@ -1,0 +1,14 @@
+{
+  "name": "ubicarportads",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicación para preparar documentos PDF antes de la firma electrónica.",
+  "scripts": {
+    "postinstall": "node scripts/install.js",
+    "start": "node scripts/start.js",
+    "dev": "node scripts/start.js --reload"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
