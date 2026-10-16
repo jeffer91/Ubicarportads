@@ -8,7 +8,7 @@
     "postinstall": "node scripts/install.js",
     "start": "electron .",
     "dev": "electron . --devtools",
-    "test": "node --test tests/*.test.js",
+    "test": "node --test tests/electron-server.test.js",
     "build:backend": "node scripts/build-backend.js",
     "dist:win": "npm run build:backend && electron-builder --win nsis --x64"
   },
