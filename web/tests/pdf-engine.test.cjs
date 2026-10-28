@@ -67,3 +67,24 @@ test("Detección automática reconoce dos bordes largos alrededor de la tabla", 
     getContext: () => ({ getImageData: () => ({ data: new Uint8ClampedArray(W * H * 4).fill(255) }) }) },
     labels, W, H), null);
 });
+
+test("Regresión: reconoce tabla alineada con ELABORADO (portada institucional)", () => {
+  // Geometría sintética: reproduce la ubicación de los bordes, sin datos privados.
+  const W = 612, H = 792;
+  const rgba = new Uint8ClampedArray(W * H * 4).fill(255);
+  for (const y of [644, 715, 733, 770]) {
+    for (let x = 47; x <= 557; x++) {
+      const index = (y * W + x) * 4;
+      rgba[index] = rgba[index + 1] = rgba[index + 2] = 0;
+    }
+  }
+  const canvas = {
+    width: W, height: H,
+    getContext: () => ({ getImageData: () => ({ data: rgba }) })
+  };
+  const labels = { y: 644, xs: [47.04, 217.49, 387.43] };
+  const box = pdf.detectTable(canvas, labels, W, H);
+  assert.ok(box, "El borde de la tabla está alineado con ELABORADO, no desplazado 2 puntos a la izquierda");
+  assert.ok(box.y <= 644 && box.y + box.height >= 770);
+  assert.ok(box.width > 500);
+});
