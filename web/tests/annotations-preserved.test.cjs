@@ -69,6 +69,7 @@ function setup({ interactivePage = -1, coverLinks = false } = {}) {
   const engineContext = {
     PDFLib: lib,
     Blob,
+    setTimeout,
     pdfjsLib: {
       Util: { transform: (_, transform) => transform },
       getDocument: () => ({ promise: Promise.resolve(createReader()) })
