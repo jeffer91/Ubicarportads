@@ -75,7 +75,7 @@
       }
       if (bestBegin >= 0 && bestEnd - bestBegin >= minRun) {
         const left = bestBegin / ratioX, right = bestEnd / ratioX;
-        if (left < label.xs[0] - 2 && right > label.xs[2] + 4) {
+        if (left <= label.xs[0] + 8 && right >= label.xs[2] + 8) {
           rows.push({ y: y / ratioY, left, right });
         }
       }
