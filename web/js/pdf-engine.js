@@ -202,17 +202,40 @@
             Math.abs(srcPages[0].getHeight() - viewport.height) > 1) {
           throw Error("La portada utiliza un recorte de página incompatible con esta versión.");
         }
-        // Los objetos interactivos no se preservan al reconstruir las páginas.
+
+        // Se preserva el árbol de páginas original. Los enlaces PDF son anotaciones
+        // normales: NO deben bloquearse ni perderse al reconstruir todo el archivo.
+        const linksByPage = [];
         for (let i = 0; i < reader.numPages; i++) {
           const p = await reader.getPage(i + 1);
-          if (p.rotate % 360 !== 0) throw Error("Hay páginas giradas. Enderézalas antes de continuar.");
-          if ((await p.getAnnotations({ intent: "display" })).length) {
-            throw Error("El PDF contiene anotaciones o campos interactivos. Se ha evitado perderlos.");
+          if (p.rotate % 360 !== 0) {
+            throw Error("Hay páginas giradas. Enderézalas antes de continuar.");
           }
+          const annotations = await p.getAnnotations({ intent: "display" });
+          const links = annotations.filter(a =>
+            a.annotationType === 2 || a.subtype === "Link" || a.type === "Link");
+          if (links.length !== annotations.length) {
+            throw Error("El PDF contiene anotaciones editables, comentarios o campos interactivos. No se modificarán.");
+          }
+          // La portada será redibujada. Un enlace sobre ella requeriría
+          // transformar su zona activa; se rechaza para evitar desalineación.
+          if (i === 0 && links.length) {
+            throw Error("La portada contiene enlaces interactivos que no se pueden recolocar de forma segura.");
+          }
+          linksByPage.push(links.length);
         }
-        const result = await lib.PDFDocument.create();
-        result.setTitle("Documento normalizado - Ubicarportads");
-        const firstOut = result.addPage([LETTER.width, LETTER.height]);
+
+        // Cargar una segunda copia para editar: embedPage debe leer SIEMPRE una
+        // página original independiente. Así se evitan referencias circulares.
+        const result = await lib.PDFDocument.load(bytes.slice(0), { updateMetadata: false });
+        if (result.getPageCount() !== srcPages.length) throw Error("No coincide el número de páginas original.");
+        const firstOut = result.getPages()[0];
+
+        // Vaciar SOLO el contenido de portada. Se conserva el objeto /Page,
+        // sus referencias y el árbol /Pages: los destinos del índice no cambian.
+        // Las otras páginas conservan su texto, enlaces, imágenes y estructura.
+        firstOut.node.set(lib.PDFName.of("Contents"), result.context.obj([]));
+        firstOut.setSize(LETTER.width, LETTER.height);
         const scale = Math.min(LETTER.width / viewport.width, LETTER.height / viewport.height);
         const ox = (LETTER.width - viewport.width * scale) / 2;
         const oy = (LETTER.height - viewport.height * scale) / 2;
@@ -228,19 +251,45 @@
           width: w, height: h
         });
         if (onProgress) onProgress(1, srcPages.length);
+
+        // En vez de recomponer las demás páginas, se mantienen y, únicamente
+        // cuando corresponde, se ajusta su tamaño junto con sus anotaciones.
+        // pdf-lib PDFPage.scale() escala contenido Y rectángulos de enlaces.
         for (let i = 1; i < srcPages.length; i++) {
-          const p = srcPages[i], w0 = p.getWidth(), h0 = p.getHeight();
-          const s = Math.min(LETTER.width / w0, LETTER.height / h0);
-          const embedded = await result.embedPage(p);
-          const out = result.addPage([LETTER.width, LETTER.height]);
-          out.drawPage(embedded, {
-            x: (LETTER.width - w0 * s) / 2, y: (LETTER.height - h0 * s) / 2,
-            width: w0 * s, height: h0 * s
-          });
+          const page = result.getPages()[i];
+          const width = page.getWidth(), height = page.getHeight();
+          if (!width || !height) throw Error("Página con dimensiones inválidas.");
+          if (Math.abs(width - LETTER.width) > 0.5 || Math.abs(height - LETTER.height) > 0.5) {
+            const ratio = Math.min(LETTER.width / width, LETTER.height / height);
+            page.scale(ratio, ratio);
+          }
+          page.setSize(LETTER.width, LETTER.height);
           if (onProgress && (i % 10 === 0 || i === srcPages.length - 1)) onProgress(i + 1, srcPages.length);
           if (i % 20 === 0) await new Promise(resolve => setTimeout(resolve, 0));
         }
         const output = await result.save({ useObjectStreams: false });
+        // Comprobar que el resultado es legible y que mantiene los enlaces.
+        let validated;
+        try {
+          validated = await global.pdfjsLib.getDocument({ data: new Uint8Array(output) }).promise;
+          if (validated.numPages !== reader.numPages) {
+            throw Error("El PDF generado no conserva todas las páginas.");
+          }
+          for (let i = 0; i < validated.numPages; i++) {
+            if (!linksByPage[i]) continue;
+            const checkPage = await validated.getPage(i + 1);
+            const annots = await checkPage.getAnnotations({ intent: "display" });
+            const found = annots.filter(a =>
+              a.annotationType === 2 || a.subtype === "Link" || a.type === "Link").length;
+            if (found !== linksByPage[i]) {
+              throw Error("No se conservaron todos los enlaces del documento (página " + (i + 1) + ").");
+            }
+          }
+        } catch (err) {
+          throw Error("No se pudo verificar la integridad del PDF: " + (err.message || "archivo incompatible"));
+        } finally {
+          if (validated) await validated.destroy();
+        }
         return new Blob([output], { type: "application/pdf" });
       },
       async dispose() { await reader.destroy(); }
