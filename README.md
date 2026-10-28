@@ -20,8 +20,8 @@ https://jeffer91.github.io/Ubicarportads/
 - Papel final: Carta, 612 × 792 pt.
 - Área objetivo: 18 × 4,2 cm; parte inferior a 1,8 cm del borde de la página.
 - Reubica el cuadro **sin estirarlo**: se escala proporcionalmente y se centra en el área objetivo.
-- La primera página se reconstruye por regiones recortadas para retirar el cuadro antiguo, preservando el resto de la capa PDF. Las páginas siguientes se insertan escaladas a Carta.
-- Se rechazan PDF protegidos, con campos o datos de firma digital, con anotaciones interactivas, páginas rotadas, recortes de portada incompatibles y documentos cuyo área de destino contenga contenido ajeno al cuadro. Algunos PDF escaneados y diseños complejos no podrán procesarse de forma segura.
+- La primera página se reconstruye por regiones recortadas para retirar el cuadro antiguo, conservando el objeto de página original y las referencias internas. Las páginas restantes se conservan en el PDF original; si difieren del tamaño Carta, sus contenidos y enlaces se escalan juntos.
+- Se aceptan enlaces normales en el índice y las referencias (conservando las anotaciones tipo Link en las páginas no editadas). Se rechazan PDF protegidos, con campos o datos de firma digital, con anotaciones editables, con enlaces interactivos en la portada, páginas rotadas, recortes de portada incompatibles y documentos cuyo área de destino contenga contenido ajeno al cuadro. Se verifica que el PDF generado mantenga el número de páginas y los enlaces. Algunos PDF escaneados y diseños complejos no podrán procesarse de forma segura.
 - Los archivos con firma electrónica **no deben modificarse después de firmarse**.
 - El tamaño de salida y el contenido deben revisarse visualmente antes de usar el documento. Las pruebas sintéticas no garantizan compatibilidad con todos los PDF.
 - El original sigue en el equipo y no se altera.
