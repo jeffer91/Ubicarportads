@@ -25,6 +25,11 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+      - name: Verificar sintaxis JavaScript y motor local
+        run: |
+          node --check web/js/pdf-engine.js
+          node --check web/js/app.js
+          node --test web/tests/*.test.cjs
       - name: Configurar Pages
         uses: actions/configure-pages@v5
       - name: Cargar sitio
